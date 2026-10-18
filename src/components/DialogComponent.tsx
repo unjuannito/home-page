@@ -43,7 +43,10 @@ export default function DialogComponent({ children, isOpen, onClose, className =
             onClick={handleBackdropClick}
             ref={dialogRef}
             onClose={handleClose}
-            onCancel={(e) => e.stopPropagation()}
+            onCancel={(e) => {
+                e.preventDefault();
+                onClose();
+            }}
         >
             {children}
         </dialog>

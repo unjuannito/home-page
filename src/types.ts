@@ -13,5 +13,5 @@ export interface SearchSettings {
 export interface ShortcutData {
   name: string;
   url: string;
-  imageURl: string;
+  imageUrl: string;
 }

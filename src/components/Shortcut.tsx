@@ -6,7 +6,7 @@ import { normalizeHttpUrl } from '../utils/security';
 interface ShortcutProps {
   name: string;
   url: string;
-  imageURl: string;
+  imageUrl: string;
   isDragging?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -15,7 +15,7 @@ interface ShortcutProps {
 export default function Shortcut({
   name,
   url,
-  imageURl,
+  imageUrl,
   isDragging,
   onEdit,
   onDelete
@@ -84,7 +84,7 @@ export default function Shortcut({
           className="p-[var(--shortcut-icon-padding)] flex items-center justify-center bg-white/5 rounded-2xl group-hover:bg-white/10 transition-colors duration-200 pointer-events-none"
         >
           <img
-            src={imageURl.trim().replace(/^`|`$/g, '')}
+            src={imageUrl.trim().replace(/^`|`$/g, '')}
             alt={name}
             className="rounded-xl object-contain transition-all duration-200 w-[var(--shortcut-icon-size)] h-[var(--shortcut-icon-size)]"
             onError={(e) => {

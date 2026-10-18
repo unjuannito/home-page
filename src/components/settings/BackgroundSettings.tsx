@@ -65,7 +65,8 @@ export default function BackgroundSettings({ background, onBgChange, dialogRef }
   }, []);
 
   const handleFiles = async (files: FileList) => {
-    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    const maxFileSize = 10 * 1024 * 1024;
+    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/') && f.size <= maxFileSize);
     if (imageFiles.length === 0) return;
 
     let lastId = '';
@@ -215,7 +216,7 @@ export default function BackgroundSettings({ background, onBgChange, dialogRef }
           type="file"
           ref={fileInputRef}
           onChange={handleFileUpload}
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,image/gif"
           multiple
           className="hidden"
         />

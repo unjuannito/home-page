@@ -5,6 +5,7 @@ import { fetchIcon } from '../../utils/iconFetcher';
 import { fetchWebName } from '../../utils/nameFetcher';
 import imagePlaceholder from '../../assets/image.svg';
 import { useI18n } from '../../i18n';
+import { normalizeHttpUrl } from '../../utils/security';
 
 interface EditShortcutDialogProps {
   isOpen: boolean;
@@ -15,16 +16,16 @@ interface EditShortcutDialogProps {
 
 export default function EditShortcutDialog({ isOpen, onClose, shortcut, onSave }: EditShortcutDialogProps) {
   const { t } = useI18n();
-  const [editedShortcut, setEditedShortcut] = useState<ShortcutData>({ name: '', url: '', imageURl: '' });
+  const [editedShortcut, setEditedShortcut] = useState<ShortcutData>({ name: '', url: '', imageUrl: '' });
   const [isLoadingIcon, setIsLoadingIcon] = useState(false);
   const [previewIcon, setPreviewIcon] = useState<string>('');
 
   useEffect(() => {
     if (shortcut) {
       setEditedShortcut(shortcut);
-      setPreviewIcon(shortcut.imageURl);
+      setPreviewIcon(shortcut.imageUrl);
     } else {
-      setEditedShortcut({ name: '', url: '', imageURl: '' });
+      setEditedShortcut({ name: '', url: '', imageUrl: '' });
       setPreviewIcon('');
     }
   }, [shortcut, isOpen]);
@@ -36,7 +37,7 @@ export default function EditShortcutDialog({ isOpen, onClose, shortcut, onSave }
     try {
       const icon = await fetchIcon(url);
       if (icon) {
-        setEditedShortcut(prev => ({ ...prev, imageURl: icon }));
+        setEditedShortcut(prev => ({ ...prev, imageUrl: icon }));
         setPreviewIcon(icon);
       }
     } catch (error) {
@@ -48,6 +49,7 @@ export default function EditShortcutDialog({ isOpen, onClose, shortcut, onSave }
 
   const handleUrlBlur = async () => {
     if (!editedShortcut.url) return;
+    if (!normalizeHttpUrl(editedShortcut.url)) return;
 
     // Si el nombre está vacío, intentar obtenerlo
     if (!editedShortcut.name) {
@@ -58,14 +60,15 @@ export default function EditShortcutDialog({ isOpen, onClose, shortcut, onSave }
     }
 
     // Si la imagen está vacía, intentar obtener el icono
-    if (!editedShortcut.imageURl) {
+    if (!editedShortcut.imageUrl) {
       handleFetchIcon(editedShortcut.url);
     }
   };
 
   const handleSave = () => {
-    if (editedShortcut.name && editedShortcut.url) {
-      onSave(editedShortcut);
+    const safeUrl = normalizeHttpUrl(editedShortcut.url);
+    if (editedShortcut.name.trim() && safeUrl) {
+      onSave({ ...editedShortcut, name: editedShortcut.name.trim(), url: safeUrl });
       onClose();
     }
   };
@@ -108,9 +111,9 @@ export default function EditShortcutDialog({ isOpen, onClose, shortcut, onSave }
             <div className="flex gap-2">
               <input
                 placeholder="Image URL"
-                value={editedShortcut.imageURl}
+                value={editedShortcut.imageUrl}
                 onChange={e => {
-                  setEditedShortcut({ ...editedShortcut, imageURl: e.target.value });
+                  setEditedShortcut({ ...editedShortcut, imageUrl: e.target.value });
                   setPreviewIcon(e.target.value);
                 }}
                 className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-blue-500 transition-colors"
