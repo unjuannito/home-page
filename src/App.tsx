@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import SearchBar from './components/SearchBar'
-import ShorcutsNav from './components/ShorcutsNav'
+import ShortcutsNav from './components/ShortcutsNav'
 import gearIcon from './assets/gear.svg'
 import SettingsDialog from './components/SettingsDialog'
 import { getWallpaper } from './db'
@@ -100,11 +100,9 @@ function App() {
       }}
     >
       <div className="w-full max-w-md md:max-w-2xl lg:max-w-7xl flex flex-col items-center gap-6 md:gap-12 max-h-full py-4 scroll-smooth">
-        {/* <div data-id="search-bar" className="w-full flex justify-center shrink-0"> */}
-          <SearchBar />
-        {/* </div> */}
+        <SearchBar />
         <div data-id="shortcuts-nav" className="w-full overflow-y-auto scrollbar-hide max-h-full px-8 md:px-4 lg:px-8">
-          <ShorcutsNav />
+          <ShortcutsNav />
         </div>
       </div>
 

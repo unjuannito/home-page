@@ -4,6 +4,7 @@ import magnifyingGlass from '../assets/magnifying-glass.svg';
 import commentsIcon from '../assets/comments.svg';
 import type { SearchSettings } from '../types';
 import { useI18n } from '../i18n';
+import { normalizeHttpUrl, parseStoredJson } from '../utils/security';
 
 export default function SearchBar() {
   const { t } = useI18n();
@@ -15,11 +16,11 @@ export default function SearchBar() {
   });
 
   const loadSettings = () => {
-    const saved = localStorage.getItem('searchSettings');
-    if (saved) {
-      const parsed = JSON.parse(saved);
+    const parsed = parseStoredJson<Partial<SearchSettings>>('searchSettings', {});
+    if (parsed.searchEngine || parsed.aiEngine) {
       setSettings({
-        ...parsed,
+        searchEngine: parsed.searchEngine ?? 'https://www.google.com/search?q=',
+        aiEngine: parsed.aiEngine ?? 'https://chatgpt.com/?q=',
         showBlur: parsed.showBlur !== undefined ? parsed.showBlur : true
       });
     }
@@ -49,14 +50,15 @@ export default function SearchBar() {
       url = baseUrl.replace(/[?&][^=]*=$/, '');
     } else if (type === 'search' && isUrl(trimmedQuery)) {
       // If it's a search and looks like a URL, go directly to it
-      url = trimmedQuery.startsWith('http') ? trimmedQuery : `https://${trimmedQuery}`;
+      url = normalizeHttpUrl(trimmedQuery) ?? '';
     } else {
       // Otherwise, use the search/AI engine
       url = baseUrl + encodeURIComponent(trimmedQuery);
     }
 
+    if (!url) return;
     if (newTab) {
-      window.open(url, '_blank');
+      window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       window.location.href = url;
     }
@@ -94,6 +96,7 @@ export default function SearchBar() {
         onClick={(e) => onIconClick(e, 'search')}
         onAuxClick={(e) => onIconClick(e, 'search')}
         tabIndex={-1}
+        aria-label={t('search')}
         className="p-2 hover:bg-white/15 rounded-xl transition-colors duration-200 focus:outline-none"
         title={t('searchWithEngine')}
       >
@@ -115,6 +118,7 @@ export default function SearchBar() {
         onClick={(e) => onIconClick(e, 'ai')}
         onAuxClick={(e) => onIconClick(e, 'ai')}
         tabIndex={-1}
+        aria-label={t('ai')}
         className="p-2 hover:bg-white/15 rounded-xl transition-colors duration-200 focus:outline-none"
         title={t('searchWithAi')}
       >

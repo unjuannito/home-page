@@ -4,8 +4,9 @@ import SortableContainer from './dnd/SortableContainer';
 import EditShortcutDialog from './settings/EditShortcutDialog';
 import type { ShortcutData, LayoutConfig } from '../types';
 import NewShortcut from './NewShortCut';
+import { migrateShortcuts, parseStoredJson } from '../utils/security';
 
-export default function ShorcutsNav() {
+export default function ShortcutsNav() {
   const [shortcuts, setShortcuts] = useState<ShortcutData[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | 'new' | null>(null);
   const [showBlur, setShowBlur] = useState(true);
@@ -19,17 +20,14 @@ export default function ShorcutsNav() {
   const [effectiveCols, setEffectiveCols] = useState(7);
 
   const loadData = () => {
-    const storedShortcuts = localStorage.getItem('shortcuts');
-    if (storedShortcuts) setShortcuts(JSON.parse(storedShortcuts));
+    const storedShortcuts = parseStoredJson<unknown>('shortcuts', []);
+    setShortcuts(migrateShortcuts(storedShortcuts));
 
-    const storedLayout = localStorage.getItem('layoutConfig');
-    if (storedLayout) setLayout(JSON.parse(storedLayout));
+    const storedLayout = parseStoredJson<LayoutConfig | null>('layoutConfig', null);
+    if (storedLayout) setLayout(storedLayout);
 
-    const storedSearch = localStorage.getItem('searchSettings');
-    if (storedSearch) {
-      const parsed = JSON.parse(storedSearch);
-      if (parsed.showBlur !== undefined) setShowBlur(parsed.showBlur);
-    }
+    const parsedSearch = parseStoredJson<{ showBlur?: boolean } | null>('searchSettings', null);
+    if (parsedSearch?.showBlur !== undefined) setShowBlur(parsedSearch.showBlur);
   };
 
   useEffect(() => {
@@ -138,9 +136,6 @@ export default function ShorcutsNav() {
     window.dispatchEvent(new Event('storage-update'));
   };
 
-  useEffect(() =>{
-
-  }, [layout])
   // Generar clases de grid dinámicas
   const gridStyle = {
     '--cols-pc': layout.pc.cols,
@@ -180,7 +175,7 @@ export default function ShorcutsNav() {
             <Shortcut
               name={shortcut.name}
               url={shortcut.url}
-              imageURl={shortcut.imageURl}
+              imageUrl={shortcut.imageUrl}
               isDragging={isDragging}
               onEdit={() => setEditingIndex(index)}
               onDelete={() => handleDeleteShortcut(index)}
@@ -193,26 +188,6 @@ export default function ShorcutsNav() {
           <NewShortcut onClick={() => setEditingIndex('new')} />
         )}
 
-        <>
-          {/* <div className="flex items-center justify-center">
-          <button
-            onClick={() => setEditingIndex('new')}
-            style={{ width: '100%', aspectRatio: '1/1', minHeight: 'unset' }}
-            className="flex flex-col items-center justify-center bg-white/5 border-2 border-dashed border-white/10 rounded-2xl gap-1 hover:bg-white/10 hover:border-white/20 transition-all group"
-          >
-            <div
-              style={{ width: 'calc(var(--shortcut-icon-size) * 0.8)', height: 'calc(var(--shortcut-icon-size) * 0.8)' }}
-              className="flex items-center justify-center bg-white/5 rounded-full group-hover:scale-110 transition-transform"
-            >
-              <img src={plusIcon} alt="Add new" className="w-1/2 h-1/2 opacity-40 group-hover:opacity-100 transition-opacity invert" />
-            </div>
-            <span className="text-[8px] md:text-[10px] font-bold text-white/40 uppercase tracking-wider group-hover:text-white/80 transition-colors text-center px-1">
-              Add
-            </span>
-          </button>
-        </div> */}
-
-        </>
       </nav>
       <EditShortcutDialog
         isOpen={editingIndex !== null}
