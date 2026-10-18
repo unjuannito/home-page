@@ -4,7 +4,7 @@ import SortableContainer from './dnd/SortableContainer';
 import EditShortcutDialog from './settings/EditShortcutDialog';
 import type { ShortcutData, LayoutConfig } from '../types';
 import NewShortcut from './NewShortCut';
-import { parseStoredJson } from '../utils/security';
+import { migrateShortcuts, parseStoredJson } from '../utils/security';
 
 export default function ShortcutsNav() {
   const [shortcuts, setShortcuts] = useState<ShortcutData[]>([]);
@@ -20,8 +20,8 @@ export default function ShortcutsNav() {
   const [effectiveCols, setEffectiveCols] = useState(7);
 
   const loadData = () => {
-    const storedShortcuts = parseStoredJson<ShortcutData[] | null>('shortcuts', null);
-    if (storedShortcuts) setShortcuts(storedShortcuts);
+    const storedShortcuts = parseStoredJson<unknown>('shortcuts', []);
+    setShortcuts(migrateShortcuts(storedShortcuts));
 
     const storedLayout = parseStoredJson<LayoutConfig | null>('layoutConfig', null);
     if (storedLayout) setLayout(storedLayout);

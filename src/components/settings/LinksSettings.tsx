@@ -61,7 +61,7 @@ export default function LinksSettings({
                   <div className="flex flex-col items-center gap-3 min-w-0">
                     <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-white/5 rounded-2xl transition-colors pointer-events-none border border-white/5">
                       <img
-                        src={s.imageUrl.trim().replace(/^`|`$/g, '')}
+                        src={(s.imageUrl || '').trim().replace(/^`|`$/g, '')}
                         alt={s.name}
                         className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-contain"
                         onError={(e) => {

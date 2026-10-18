@@ -31,5 +31,11 @@ docker build -t home-page .
 docker run -d --name home-page --restart unless-stopped -p 127.0.0.1:38741:38741 home-page
 ```
 
+Con Compose:
+
+```bash
+docker compose up -d --build
+```
+
 El proxy inverso debe terminar TLS para `explore.jcanas.es` y reenviar el tráfico a
 `http://127.0.0.1:38741`.

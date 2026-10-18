@@ -17,3 +17,19 @@ export function parseStoredJson<T>(key: string, fallback: T): T {
     return fallback;
   }
 }
+import type { ShortcutData } from '../types';
+
+
+export function migrateShortcuts(value: unknown): ShortcutData[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
+    .map((item) => ({
+      name: typeof item.name === 'string' ? item.name : 'Shortcut',
+      url: typeof item.url === 'string' ? item.url : '',
+      imageUrl: typeof item.imageUrl === 'string'
+        ? item.imageUrl
+        : typeof item.imageURl === 'string' ? item.imageURl : '',
+    }))
+    .filter((item) => item.url.length > 0);
+}

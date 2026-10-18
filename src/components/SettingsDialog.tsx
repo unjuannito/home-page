@@ -5,7 +5,7 @@ import GeneralSettings from './settings/GeneralSettings';
 import LinksSettings from './settings/LinksSettings';
 import BackgroundSettings from './settings/BackgroundSettings';
 import { useI18n } from '../i18n';
-import { parseStoredJson } from '../utils/security';
+import { migrateShortcuts, parseStoredJson } from '../utils/security';
 
 interface SettingsDialogProps {
   isOpen: boolean;
@@ -50,8 +50,8 @@ export default function SettingsDialog({ isOpen, onClose }: SettingsDialogProps)
       });
     }
 
-    const savedShortcuts = parseStoredJson<ShortcutData[] | null>('shortcuts', null);
-    if (savedShortcuts) setShortcuts(savedShortcuts);
+    const savedShortcuts = parseStoredJson<unknown>('shortcuts', []);
+    setShortcuts(migrateShortcuts(savedShortcuts));
 
     const savedBg = localStorage.getItem('appBackground');
     if (savedBg) setBackground(savedBg);
