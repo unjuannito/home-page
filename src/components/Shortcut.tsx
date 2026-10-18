@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ContextMenu from './ContextMenu';
 import { useI18n } from '../i18n';
+import { normalizeHttpUrl } from '../utils/security';
 
 interface ShortcutProps {
   name: string;
@@ -20,6 +21,7 @@ export default function Shortcut({
   onDelete
 }: ShortcutProps) {
   const { t } = useI18n();
+  const safeUrl = normalizeHttpUrl(url);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
 
   useEffect(() => {
@@ -38,15 +40,15 @@ export default function Shortcut({
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(safeUrl ?? url);
     } catch (err) {
       console.error('Failed to copy link: ', err);
     }
   };
 
   const menuItems = [
-    { label: t('open'), onClick: () => window.location.href = url },
-    { label: t('openNewTab'), onClick: () => window.open(url, '_blank') },
+    { label: t('open'), onClick: () => safeUrl && (window.location.href = safeUrl) },
+    { label: t('openNewTab'), onClick: () => safeUrl && window.open(safeUrl, '_blank', 'noopener,noreferrer') },
     { label: t('copyLink'), onClick: handleCopyLink },
     { label: 'Separator', onClick: () => { }, isSeparator: true },
     { label: t('editShortcut'), onClick: () => onEdit?.() },
@@ -56,7 +58,7 @@ export default function Shortcut({
   return (
     <>
       <a
-        href={url}
+        href={safeUrl ?? '#'}
         rel="noopener noreferrer"
         draggable="false"
         onClick={(e) => {
@@ -69,7 +71,7 @@ export default function Shortcut({
             e.stopPropagation();
             if (e.ctrlKey) {
               e.preventDefault();
-              window.open(url, '_blank');
+              if (safeUrl) window.open(safeUrl, '_blank', 'noopener,noreferrer');
             }
             // Let the default behavior of <a> handle the navigation for Enter without Ctrl
           }
@@ -86,7 +88,7 @@ export default function Shortcut({
             alt={name}
             className="rounded-xl object-contain transition-all duration-200 w-[var(--shortcut-icon-size)] h-[var(--shortcut-icon-size)]"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://www.google.com/s2/favicons?domain=' + url + '&sz=128';
+              if (safeUrl) (e.target as HTMLImageElement).src = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(new URL(safeUrl).hostname) + '&sz=128';
             }}
           />
         </div>

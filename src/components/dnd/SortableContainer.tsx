@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DndContext,
@@ -57,7 +57,7 @@ export default function SortableContainer<T extends Record<string, any>>({
     })
   );
 
-  const getItemId = (item: T, index: number): string | number => {
+  const getItemId = useCallback((item: T, index: number): string | number => {
     if (item && typeof item === 'object') {
       if ('id' in item && (typeof item.id === 'string' || typeof item.id === 'number')) {
         return item.id;
@@ -67,9 +67,9 @@ export default function SortableContainer<T extends Record<string, any>>({
       }
     }
     return index;
-  };
+  }, []);
 
-  const itemIds = useMemo(() => items.map((item, index) => getItemId(item, index)), [items]);
+  const itemIds = useMemo(() => items.map((item, index) => getItemId(item, index)), [items, getItemId]);
 
   const activeItem = useMemo(() => {
     if (activeId === null) return null;

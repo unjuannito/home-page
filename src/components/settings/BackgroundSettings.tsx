@@ -4,6 +4,7 @@ import SortableContainer from '../dnd/SortableContainer';
 import imageIcon from '../../assets/image.svg';
 import xmarkIcon from '../../assets/xmark.svg';
 import { useI18n } from '../../i18n';
+import { parseStoredJson } from '../../utils/security';
 
 interface BackgroundSettingsProps {
   background: string;
@@ -21,6 +22,7 @@ export default function BackgroundSettings({ background, onBgChange, dialogRef }
   const { t } = useI18n();
   const presetColors = ['#1a1a1a', '#2d3436', '#0f172a', '#1e1b4b', '#451a03', '#064e3b', '#171717'];
   const [customWallpapers, setCustomWallpapers] = useState<CustomWallpaper[]>([]);
+  const wallpapersRef = useRef<CustomWallpaper[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
@@ -34,8 +36,7 @@ export default function BackgroundSettings({ background, onBgChange, dialogRef }
 
   const loadCustomWallpapers = async () => {
     const saved = await getAllWallpapers();
-    const savedOrder = localStorage.getItem('wallpaperOrder');
-    const order = savedOrder ? JSON.parse(savedOrder) : [];
+    const order = parseStoredJson<string[]>('wallpaperOrder', []);
 
     // Sort based on saved order
     const sorted = [...saved].sort((a, b) => {
@@ -51,13 +52,15 @@ export default function BackgroundSettings({ background, onBgChange, dialogRef }
       ...wp,
       url: URL.createObjectURL(wp.blob)
     }));
+    wallpapersRef.current.forEach(wp => URL.revokeObjectURL(wp.url));
+    wallpapersRef.current = withUrls;
     setCustomWallpapers(withUrls);
   };
 
   useEffect(() => {
     loadCustomWallpapers();
     return () => {
-      customWallpapers.forEach(wp => URL.revokeObjectURL(wp.url));
+      wallpapersRef.current.forEach(wp => URL.revokeObjectURL(wp.url));
     };
   }, []);
 
@@ -105,7 +108,7 @@ export default function BackgroundSettings({ background, onBgChange, dialogRef }
     // Remove from saved order
     const savedOrder = localStorage.getItem('wallpaperOrder');
     if (savedOrder) {
-      const order = JSON.parse(savedOrder) as string[];
+      const order = parseStoredJson<string[]>('wallpaperOrder', []);
       const newOrder = order.filter(itemId => itemId !== id);
       localStorage.setItem('wallpaperOrder', JSON.stringify(newOrder));
     }

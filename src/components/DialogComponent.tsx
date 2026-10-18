@@ -23,7 +23,7 @@ export default function DialogComponent({ children, isOpen, onClose, className =
                 dialogRef.current.close();
             }
         }
-    }, [isOpen]);
+    }, [isOpen, dialogRef]);
 
     const handleBackdropClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {

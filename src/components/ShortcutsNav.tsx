@@ -4,8 +4,9 @@ import SortableContainer from './dnd/SortableContainer';
 import EditShortcutDialog from './settings/EditShortcutDialog';
 import type { ShortcutData, LayoutConfig } from '../types';
 import NewShortcut from './NewShortCut';
+import { parseStoredJson } from '../utils/security';
 
-export default function ShorcutsNav() {
+export default function ShortcutsNav() {
   const [shortcuts, setShortcuts] = useState<ShortcutData[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | 'new' | null>(null);
   const [showBlur, setShowBlur] = useState(true);
@@ -19,17 +20,14 @@ export default function ShorcutsNav() {
   const [effectiveCols, setEffectiveCols] = useState(7);
 
   const loadData = () => {
-    const storedShortcuts = localStorage.getItem('shortcuts');
-    if (storedShortcuts) setShortcuts(JSON.parse(storedShortcuts));
+    const storedShortcuts = parseStoredJson<ShortcutData[] | null>('shortcuts', null);
+    if (storedShortcuts) setShortcuts(storedShortcuts);
 
-    const storedLayout = localStorage.getItem('layoutConfig');
-    if (storedLayout) setLayout(JSON.parse(storedLayout));
+    const storedLayout = parseStoredJson<LayoutConfig | null>('layoutConfig', null);
+    if (storedLayout) setLayout(storedLayout);
 
-    const storedSearch = localStorage.getItem('searchSettings');
-    if (storedSearch) {
-      const parsed = JSON.parse(storedSearch);
-      if (parsed.showBlur !== undefined) setShowBlur(parsed.showBlur);
-    }
+    const parsedSearch = parseStoredJson<{ showBlur?: boolean } | null>('searchSettings', null);
+    if (parsedSearch?.showBlur !== undefined) setShowBlur(parsedSearch.showBlur);
   };
 
   useEffect(() => {

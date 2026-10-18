@@ -5,6 +5,7 @@ import GeneralSettings from './settings/GeneralSettings';
 import LinksSettings from './settings/LinksSettings';
 import BackgroundSettings from './settings/BackgroundSettings';
 import { useI18n } from '../i18n';
+import { parseStoredJson } from '../utils/security';
 
 interface SettingsDialogProps {
   isOpen: boolean;
@@ -37,20 +38,20 @@ export default function SettingsDialog({ isOpen, onClose }: SettingsDialogProps)
   const [background, setBackground] = useState<string>('#1a1a1a');
 
   useEffect(() => {
-    const savedLayout = localStorage.getItem('layoutConfig');
-    if (savedLayout) setLayout(JSON.parse(savedLayout));
+    const savedLayout = parseStoredJson<LayoutConfig | null>('layoutConfig', null);
+    if (savedLayout) setLayout(savedLayout);
 
-    const savedSearch = localStorage.getItem('searchSettings');
-    if (savedSearch) {
-      const parsed = JSON.parse(savedSearch);
+    const parsedSearch = parseStoredJson<Partial<SearchSettings> | null>('searchSettings', null);
+    if (parsedSearch) {
       setSearchSettings({
-        ...parsed,
-        showBlur: parsed.showBlur !== undefined ? parsed.showBlur : true
+        searchEngine: parsedSearch.searchEngine ?? 'https://www.google.com/search?q=',
+        aiEngine: parsedSearch.aiEngine ?? 'https://chatgpt.com/?q=',
+        showBlur: parsedSearch.showBlur !== undefined ? parsedSearch.showBlur : true
       });
     }
 
-    const savedShortcuts = localStorage.getItem('shortcuts');
-    if (savedShortcuts) setShortcuts(JSON.parse(savedShortcuts));
+    const savedShortcuts = parseStoredJson<ShortcutData[] | null>('shortcuts', null);
+    if (savedShortcuts) setShortcuts(savedShortcuts);
 
     const savedBg = localStorage.getItem('appBackground');
     if (savedBg) setBackground(savedBg);
